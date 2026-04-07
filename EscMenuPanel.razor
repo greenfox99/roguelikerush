@@ -1,0 +1,157 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sweeper.UI;
+@inherits PanelComponent
+
+<root class="esc-menu-root @(IsOpen ? "open" : "")">
+	<div class="esc-backdrop"></div>
+
+	<div class="esc-layout">
+		<div class="esc-left">
+			<div class="esc-title">Пауза</div>
+
+			<button class="menu-button play" @onclick="ResumeGame">
+				Продолжить
+			</button>
+
+			<button class="menu-button @(CurrentPage == EscPage.Settings ? "active" : "")"
+					@onclick='() => OpenPage(EscPage.Settings)'>
+				Настройки
+			</button>
+
+			<button class="menu-button @(CurrentPage == EscPage.Stats ? "active" : "")"
+					@onclick='() => OpenPage(EscPage.Stats)'>
+				Статистика
+			</button>
+
+			<button class="menu-button @(CurrentPage == EscPage.Author ? "active" : "")"
+					@onclick='() => OpenPage(EscPage.Author)'>
+				Автор игры
+			</button>
+
+			<button class="menu-button exit" @onclick="ExitGame">
+				Выход из игры
+			</button>
+		</div>
+
+		<div class="esc-right">
+			@if ( CurrentPage == EscPage.Settings )
+			{
+				<div class="content-card">
+					<div class="content-title">Настройки</div>
+					<div class="content-text">
+						Пока заглушка. Потом сюда закинем звук, графику, управление и всё остальное.
+					</div>
+				</div>
+			}
+			else if ( CurrentPage == EscPage.Stats )
+			{
+				<div class="content-card">
+					<div class="content-title">Статистика</div>
+					<div class="content-text">
+						Пока заглушка. Потом сюда можно вывести время игры, монеты, прогресс, врагов и другую стату.
+					</div>
+				</div>
+			}
+			else if ( CurrentPage == EscPage.Author )
+			{
+				<div class="content-card">
+					<div class="content-title">Автор игры</div>
+					<div class="content-text">
+						Тут будет инфа об авторе игры, версия билда, ссылки и прочая красота.
+					</div>
+				</div>
+			}
+		</div>
+	</div>
+</root>
+
+@code
+{
+	bool IsOpen { get; set; }
+	EscPage CurrentPage { get; set; } = EscPage.Settings;
+
+	protected override void OnUpdate()
+	{
+		if ( Input.EscapePressed )
+		{
+			Input.EscapePressed = false;
+			ToggleMenu();
+		}
+	}
+
+	protected override void OnDisabled()
+	{
+		base.OnDisabled();
+
+		RestoreTimeScale();
+		EscMenuState.IsOpen = false;
+	}
+
+	protected override int BuildHash()
+{
+	return System.HashCode.Combine( IsOpen, CurrentPage );
+}
+
+	void ToggleMenu()
+	{
+		IsOpen = !IsOpen;
+		EscMenuState.IsOpen = IsOpen;
+
+		if ( !IsOpen )
+			CurrentPage = EscPage.Settings;
+
+		ApplyTimeScale();
+		StateHasChanged();
+	}
+
+	void ResumeGame()
+	{
+		IsOpen = false;
+		EscMenuState.IsOpen = false;
+
+		ApplyTimeScale();
+		StateHasChanged();
+	}
+
+	void OpenPage( EscPage page )
+	{
+		IsOpen = true;
+		EscMenuState.IsOpen = true;
+		CurrentPage = page;
+
+		ApplyTimeScale();
+		StateHasChanged();
+	}
+
+	void ApplyTimeScale()
+	{
+		var scene = GameObject?.Scene;
+		if ( scene is null )
+			return;
+
+		scene.TimeScale = IsOpen ? 0f : 1f;
+	}
+
+	void RestoreTimeScale()
+	{
+		var scene = GameObject?.Scene;
+		if ( scene is null )
+			return;
+
+		scene.TimeScale = 1f;
+	}
+
+	void ExitGame()
+	{
+		RestoreTimeScale();
+		Log.Info( "TODO: сюда потом повесим реальный выход из игры / возврат в меню" );
+	}
+
+	enum EscPage
+	{
+		Settings,
+		Stats,
+		Author
+	}
+}

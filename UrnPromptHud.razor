@@ -1,0 +1,30 @@
+@using Sandbox
+@using Sandbox.UI
+@inherits PanelComponent
+
+<root class="urn-hud-root">
+	@if (Interactor?.FocusedUrn is not null)
+	{
+		<div class="urn-prompt">
+			Разбить урну [@UseKey]
+		</div>
+	}
+</root>
+
+@code {
+	[Property] public UrnInteractor Interactor { get; set; }
+
+	private string UseKey
+	{
+		get
+		{
+			var action = Interactor?.UseAction ?? "use";
+			var key = Input.GetButtonOrigin( action );
+
+			if ( string.IsNullOrWhiteSpace( key ) )
+				return "E";
+
+			return key.ToUpperInvariant();
+		}
+	}
+}
